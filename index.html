@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Analisis Algoritma Iteratif & Rekursif</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <style>
+      body {
+        font-family: "Segoe UI", sans-serif;
+        background: #f4f3f3;
+        margin: 0;
+        padding: 30px;
+      }
+
+      .wrapper {
+        max-width: 1000px;
+        margin: auto;
+        background: #ffffff;
+        border-radius: 14px;
+        padding: 30px;
+      }
+
+      h1 {
+        text-align: center;
+        margin-bottom: 5px;
+      }
+
+      .subtitle {
+        text-align: center;
+        margin-bottom: 30px;
+        color: #555;
+      }
+
+      .input-area {
+        display: grid;
+        grid-template-columns: 1fr 1fr auto;
+        gap: 15px;
+        margin-bottom: 30px;
+      }
+
+      input {
+        padding: 12px;
+        border-radius: 8px;
+        border: 1px solid #ccc;
+        font-size: 15px;
+      }
+
+      button {
+        padding: 12px 25px;
+        border: none;
+        border-radius: 8px;
+        background: #6a73d9;
+        color: white;
+        font-size: 15px;
+        cursor: pointer;
+      }
+
+      .result-area {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+      }
+
+      .card {
+        background: #f7f8ff;
+        padding: 20px;
+        border-radius: 10px;
+      }
+
+      .detail {
+        margin-top: 20px;
+        background: #eef1ff;
+        padding: 20px;
+        border-radius: 10px;
+      }
+
+      canvas {
+        margin-top: 40px;
+      }
+
+      @media (max-width: 768px) {
+        .input-area,
+        .result-area {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="wrapper">
+      <h1>Analisis Efisiensi Algoritma Iteratif & Rekursif</h1>
+      <div class="subtitle">Simulasi Pengemasan Barang</div>
+
+      <div class="input-area">
+        <input
+          type="text"
+          id="barang"
+          placeholder="Berat barang (contoh: 2,3,4,5)"
+        />
+        <input type="number" id="kapasitas" placeholder="Kapasitas maksimum" />
+        <button onclick="jalankan()">Jalankan Perhitungan</button>
+      </div>
+
+      <div class="result-area">
+        <div class="card" id="hasilIteratif"></div>
+        <div class="card" id="hasilRekursif"></div>
+      </div>
+
+      <div class="detail" id="penjelasan"></div>
+
+      <canvas id="grafik"></canvas>
+    </div>
+
+    <script>
+
+      function simulasiProses() {
+        let x = 0;
+        for (let i = 0; i < 50000; i++) {
+          x += Math.sqrt(i);
+        }
+      }
+
+      function iteratif(barang, kapasitas) {
+        let total = 0;
+        let masuk = [];
+
+        for (let i = 0; i < barang.length; i++) {
+          simulasiProses();
+          if (total + barang[i] <= kapasitas) {
+            total += barang[i];
+            masuk.push(barang[i]);
+          }
+        }
+        return { masuk, total };
+      }
+
+      function rekursif(barang, kapasitas, i = 0, total = 0, masuk = []) {
+        simulasiProses();
+
+        if (i === barang.length) return { masuk, total };
+
+        if (total + barang[i] <= kapasitas) {
+          masuk.push(barang[i]);
+          return rekursif(barang, kapasitas, i + 1, total + barang[i], masuk);
+        }
+        return rekursif(barang, kapasitas, i + 1, total, masuk);
+      }
+
+      let chart = null;
+
+      function jalankan() {
+        const barang = document
+          .getElementById("barang")
+          .value.split(",")
+          .map(Number)
+          .filter((n) => !isNaN(n));
+
+        const kapasitas = parseInt(
+          document.getElementById("kapasitas").value
+        );
+
+        if (barang.length === 0 || isNaN(kapasitas)) {
+          alert("Input tidak valid");
+          return;
+        }
+
+        let t1 = performance.now();
+        let hasilI = iteratif(barang, kapasitas);
+        let t2 = performance.now();
+
+        let t3 = performance.now();
+        let hasilR = rekursif(barang, kapasitas);
+        let t4 = performance.now();
+
+        let waktuI = (t2 - t1).toFixed(4);
+        let waktuR = (t4 - t3).toFixed(4);
+
+        document.getElementById("hasilIteratif").innerHTML = `
+          <b>Algoritma Iteratif</b><br><br>
+          Barang masuk: ${hasilI.masuk.join(", ")}<br>
+          Total berat: ${hasilI.total}<br>
+          Jumlah barang: ${hasilI.masuk.length}<br>
+          Waktu eksekusi: ${waktuI} ms<br>
+          Kompleksitas: O(n)
+        `;
+
+        document.getElementById("hasilRekursif").innerHTML = `
+          <b>Algoritma Rekursif</b><br><br>
+          Barang masuk: ${hasilR.masuk.join(", ")}<br>
+          Total berat: ${hasilR.total}<br>
+          Jumlah barang: ${hasilR.masuk.length}<br>
+          Waktu eksekusi: ${waktuR} ms<br>
+          Kompleksitas: O(n)
+        `;
+
+        document.getElementById("penjelasan").innerHTML = `
+          <b>Rumus Iteratif:</b><br>
+          T(n) = Σ<sub>i=1</sub><sup>n</sup> 1<br>
+          T(n) = n<br><br>
+
+          <b>Rumus Rekursif:</b><br>
+          T(n) = T(n−1) + 1<br>
+          T(0) = 0<br><br>
+
+          <b>Substitusi:</b><br>
+          T(${barang.length}) = ${barang.length} operasi<br><br>
+
+          <b>Penjelasan:</b><br>
+          - Iteratif memproses setiap barang satu kali menggunakan perulangan.<br>
+          - Rekursif memanggil fungsi untuk setiap elemen hingga kondisi dasar tercapai.
+        `;
+
+        if (chart) chart.destroy();
+
+        chart = new Chart(document.getElementById("grafik"), {
+          type: "bar",
+          data: {
+            labels: ["Iteratif", "Rekursif"],
+            datasets: [
+              {
+                label: "Waktu Eksekusi (ms)",
+                data: [waktuI, waktuR],
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              legend: { display: false },
+            },
+          },
+        });
+      }
+    </script>
+  </body>
+</html>
